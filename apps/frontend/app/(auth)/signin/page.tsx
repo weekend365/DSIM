@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { SignInResponse } from '@dsim/shared';
 
 export default function SignInPage() {
@@ -8,6 +9,7 @@ export default function SignInPage() {
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState<string>('');
+  const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -32,7 +34,16 @@ export default function SignInPage() {
       const data = (await response.json()) as SignInResponse;
       setStatus('success');
       setMessage(data.message ?? 'Signed in successfully');
-      // TODO: Persist token and redirect to dashboard.
+
+      if (data.data?.accessToken) {
+        // TODO: Replace localStorage usage with a secure cookie once real auth is wired.
+        localStorage.setItem('dsim:accessToken', data.data.accessToken);
+      }
+
+      // Redirect to dashboard after a brief tick so the UI can show success.
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 150);
     } catch (error) {
       console.error('Sign-in error', error);
       setStatus('error');

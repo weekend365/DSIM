@@ -1,6 +1,8 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import type { ApiResponse, SignInRequest, SignInResponse } from '@dsim/shared';
+import { Body, Controller, Get, Post, UseGuards, Req } from '@nestjs/common';
+import type { ApiResponse, SignInRequest, SignInResponse, JwtPayload } from '@dsim/shared';
 import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import { SignInDto } from './dto/sign-in.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -12,7 +14,13 @@ export class AuthController {
   }
 
   @Post('signin')
-  signIn(@Body() payload: SignInRequest): SignInResponse {
+  signIn(@Body() payload: SignInDto): SignInResponse {
     return this.authService.signIn(payload);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  me(@Req() req: { user: JwtPayload }): ApiResponse<JwtPayload> {
+    return { message: 'Current session', data: req.user };
   }
 }

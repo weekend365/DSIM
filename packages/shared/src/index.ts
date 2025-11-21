@@ -45,4 +45,12 @@ export interface AuthTokenPayload {
 
 export type SignInResponse = ApiResponse<AuthTokenPayload>;
 
+export interface JwtPayload {
+  sub: string;
+  email: string;
+  role: UserRole | string;
+  iat?: number;
+  exp?: number;
+}
+
 // TODO: Add cross-cutting DTOs and validation schemas when features land.

@@ -1,13 +1,17 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const origins =
+    process.env.FRONTEND_ORIGIN?.split(',').map((item) => item.trim()).filter(Boolean) ?? [];
   app.enableCors({
-    origin: process.env.FRONTEND_ORIGIN ?? '*',
+    origin: origins.length ? origins : true,
     credentials: true
   });
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
 
   const port = process.env.PORT ?? 4000;
   await app.listen(port);
