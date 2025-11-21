@@ -38,12 +38,17 @@ export interface SignInRequest {
   password: string;
 }
 
+export interface SignUpRequest extends SignInRequest {
+  name: string;
+}
+
 export interface AuthTokenPayload {
   accessToken: string;
   expiresIn: number;
 }
 
 export type SignInResponse = ApiResponse<AuthTokenPayload>;
+export type SignUpResponse = ApiResponse<AuthTokenPayload>;
 
 export interface JwtPayload {
   sub: string;
@@ -51,6 +56,14 @@ export interface JwtPayload {
   role: UserRole | string;
   iat?: number;
   exp?: number;
+}
+
+export interface UserRecord {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole | string;
+  passwordHash: string;
 }
 
 // TODO: Add cross-cutting DTOs and validation schemas when features land.

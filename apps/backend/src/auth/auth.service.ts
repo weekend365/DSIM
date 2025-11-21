@@ -1,27 +1,53 @@
 import { Injectable } from '@nestjs/common';
-import type { ApiResponse, JwtPayload, SignInRequest, SignInResponse } from '@dsim/shared';
+import type {
+  ApiResponse,
+  JwtPayload,
+  SignInRequest,
+  SignInResponse,
+  SignUpRequest,
+  SignUpResponse
+} from '@dsim/shared';
 import { JwtService } from '@nestjs/jwt';
+import { BadRequestException } from '@nestjs/common';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(private readonly jwtService: JwtService, private readonly usersService: UsersService) {}
 
   getMessage(): ApiResponse {
     return { message: 'Auth module ready' };
   }
 
+  async signUp(payload: SignUpRequest): Promise<SignUpResponse> {
+    const user = await this.usersService.createUser(payload);
+    const token = this.signToken(user.id, user.email, user.role);
+    return {
+      message: 'Sign-up success',
+      data: token
+    };
+  }
+
   signIn(payload: SignInRequest): SignInResponse {
-    // TODO: Replace with real user validation and password hashing.
-    const userId = 'user-123';
-    const jwtPayload: JwtPayload = { sub: userId, email: payload.email, role: 'traveler' };
-    const accessToken = this.jwtService.sign(jwtPayload);
+    throw new BadRequestException('Use async signInAsync');
+  }
+
+  async signInAsync(payload: SignInRequest): Promise<SignInResponse> {
+    const user = await this.usersService.verifyUser(payload.email, payload.password);
+    const token = this.signToken(user.id, user.email, user.role);
 
     return {
       message: 'Sign-in success',
-      data: {
-        accessToken,
-        expiresIn: 60 * 60
-      }
+      data: token
+    };
+  }
+
+  private signToken(userId: string, email: string, role: string) {
+    const jwtPayload: JwtPayload = { sub: userId, email, role };
+    const accessToken = this.jwtService.sign(jwtPayload);
+    return {
+      accessToken,
+      expiresIn: 60 * 60
     };
   }
 }

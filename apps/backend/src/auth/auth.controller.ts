@@ -1,8 +1,14 @@
 import { Body, Controller, Get, Post, UseGuards, Req } from '@nestjs/common';
-import type { ApiResponse, SignInRequest, SignInResponse, JwtPayload } from '@dsim/shared';
+import type {
+  ApiResponse,
+  SignInRequest,
+  SignInResponse,
+  JwtPayload,
+  SignUpResponse
+} from '@dsim/shared';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { SignInDto } from './dto/sign-in.dto';
+import { SignInDto, SignUpDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -13,9 +19,14 @@ export class AuthController {
     return this.authService.getMessage();
   }
 
+  @Post('signup')
+  async signUp(@Body() payload: SignUpDto): Promise<SignUpResponse> {
+    return this.authService.signUp(payload);
+  }
+
   @Post('signin')
-  signIn(@Body() payload: SignInDto): SignInResponse {
-    return this.authService.signIn(payload);
+  async signIn(@Body() payload: SignInDto): Promise<SignInResponse> {
+    return this.authService.signInAsync(payload);
   }
 
   @UseGuards(JwtAuthGuard)
