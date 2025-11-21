@@ -1,5 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
-import type { ApiResponse } from '@dsim/shared';
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import type { ApiResponse, SignInRequest, SignInResponse } from '@dsim/shared';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -9,5 +9,10 @@ export class AuthController {
   @Get()
   getPlaceholder(): ApiResponse {
     return this.authService.getMessage();
+  }
+
+  @Post('signin')
+  signIn(@Body() payload: SignInRequest): SignInResponse {
+    return this.authService.signIn(payload);
   }
 }

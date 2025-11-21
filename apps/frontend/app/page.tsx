@@ -1,15 +1,17 @@
 const features = [
   'Match by shared travel styles and dream destinations',
   'Coordinate itineraries, budgets, and safety preferences',
-  'Chat, split expenses, and plan memorable routes together'
+  'Chat, split expenses, and plan memorable routes together',
 ];
 
 export default function HomePage() {
   return (
     <section className="space-y-8">
       <div className="space-y-4 text-center">
-        <p className="text-sm uppercase tracking-[0.4em] text-brand-600">DSIM</p>
-        <h1 className="text-4xl font-bold sm:text-5xl">Dream Same, Travel Together</h1>
+        <p className="text-sm uppercase tracking-[0.4em] text-brand-600">동상일몽</p>
+        <h1 className="text-3xl font-bold sm:text-4xl">
+          같은 자리에서 하나의 꿈을 꾸는 사람들의 연결
+        </h1>
         <p className="text-lg text-slate-600">
           Your travel companion hub for finding people who share the same adventures, pace, and
           expectations.
@@ -33,7 +35,10 @@ export default function HomePage() {
         >
           Open Dashboard
         </a>
-        <a className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold" href="/explore">
+        <a
+          className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold"
+          href="/explore"
+        >
           Explore Trips
         </a>
       </div>

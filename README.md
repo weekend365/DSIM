@@ -1,6 +1,6 @@
 # DSIM Monorepo
 
-DSIM (동상일몽) is a travel companion matching service built with a pnpm-based monorepo. The repository houses a Next.js frontend, a Nest.js backend, and a shared workspace for cross-cutting types and utilities.
+동상일몽 (同床一夢) is a travel companion matching service built with a pnpm-based monorepo. The repository houses a Next.js frontend, a Nest.js backend, and a shared workspace for cross-cutting types and utilities.
 
 ## Workspaces
 

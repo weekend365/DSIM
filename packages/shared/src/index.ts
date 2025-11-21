@@ -27,4 +27,22 @@ export interface PaginationParams {
 
 export type Nullable<T> = T | null | undefined;
 
+export interface HealthCheckResponse extends ApiResponse {
+  status: 'ok';
+  timestamp: string;
+  uptime: number;
+}
+
+export interface SignInRequest {
+  email: string;
+  password: string;
+}
+
+export interface AuthTokenPayload {
+  accessToken: string;
+  expiresIn: number;
+}
+
+export type SignInResponse = ApiResponse<AuthTokenPayload>;
+
 // TODO: Add cross-cutting DTOs and validation schemas when features land.

@@ -1,15 +1,45 @@
 'use client';
 
 import { useState } from 'react';
+import type { SignInResponse } from '@dsim/shared';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [message, setMessage] = useState<string>('');
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // TODO: Hook up to auth API once available.
-    console.log('Attempt sign-in', { email, password });
+    setStatus('loading');
+    setMessage('');
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000'}/auth/signin`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Sign-in failed');
+      }
+
+      const data = (await response.json()) as SignInResponse;
+      setStatus('success');
+      setMessage(data.message ?? 'Signed in successfully');
+      // TODO: Persist token and redirect to dashboard.
+    } catch (error) {
+      console.error('Sign-in error', error);
+      setStatus('error');
+      setMessage(error instanceof Error ? error.message : 'Sign-in failed');
+    } finally {
+      setStatus((prev) => (prev === 'success' ? 'success' : prev === 'error' ? 'error' : 'idle'));
+    }
   };
 
   return (
@@ -42,11 +72,22 @@ export default function SignInPage() {
         </label>
         <button
           type="submit"
-          className="w-full rounded-lg bg-brand-600 px-3 py-2 text-white shadow-brand-500/40"
+          className="w-full rounded-lg bg-brand-600 px-3 py-2 text-white shadow-brand-500/40 disabled:opacity-60"
+          disabled={status === 'loading'}
+          aria-busy={status === 'loading'}
         >
-          Sign in
+          {status === 'loading' ? 'Signing in...' : 'Sign in'}
         </button>
       </form>
+      {message ? (
+        <p
+          className={`text-center text-sm ${
+            status === 'error' ? 'text-red-600' : 'text-green-600'
+          }`}
+        >
+          {message}
+        </p>
+      ) : null}
       <p className="text-center text-sm text-slate-500">
         No account yet? <a className="text-brand-600" href="/signup">Join DSIM</a>
       </p>
