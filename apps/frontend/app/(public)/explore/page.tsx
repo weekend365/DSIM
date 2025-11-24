@@ -1,22 +1,20 @@
-const sampleTrips = [
-  {
-    title: 'Nordic Aurora Quest',
-    companions: 4,
-    style: 'Slow travel + Photography'
-  },
-  {
-    title: 'Lisbon Remote-Work Month',
-    companions: 3,
-    style: 'Cowork + Surf breaks'
-  },
-  {
-    title: 'Patagonia Expedition',
-    companions: 5,
-    style: 'Backpacking + Sustainability'
-  }
-];
+import type { TravelPost } from '@dsim/shared';
 
-export default function ExplorePage() {
+async function fetchTravelPosts(): Promise<TravelPost[]> {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000'}/travel-posts`,
+    { next: { revalidate: 10 } }
+  );
+  if (!res.ok) {
+    console.error('Failed to load travel posts', await res.text());
+    return [];
+  }
+  return res.json();
+}
+
+export default async function ExplorePage() {
+  const posts = await fetchTravelPosts();
+
   return (
     <section className="space-y-6">
       <header className="space-y-2">
@@ -25,13 +23,28 @@ export default function ExplorePage() {
         <p className="text-slate-600">See how travelers pair up before onboarding launches.</p>
       </header>
       <div className="grid gap-4 md:grid-cols-3">
-        {sampleTrips.map((trip) => (
-          <article key={trip.title} className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm">
-            <h2 className="text-lg font-semibold">{trip.title}</h2>
-            <p className="text-sm text-slate-500">{trip.style}</p>
-            <p className="mt-2 text-sm text-slate-600">{trip.companions} companions interested</p>
+        {posts.length === 0 ? (
+          <article className="rounded-xl border border-dashed border-slate-200 bg-white/70 p-4 text-sm text-slate-600">
+            No travel posts yet. Be the first to create one from your dashboard.
           </article>
-        ))}
+        ) : (
+          posts.map((post) => (
+            <article
+              key={post.id}
+              className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm"
+            >
+              <h2 className="text-lg font-semibold">{post.title}</h2>
+              <p className="text-sm text-slate-500">{post.destination}</p>
+              <p className="mt-2 text-sm text-slate-700">
+                {post.description || 'No description yet.'}
+              </p>
+              <p className="mt-2 text-xs text-slate-500">
+                {post.creator?.name ?? 'Anonymous'} •{' '}
+                {new Date(post.createdAt).toLocaleDateString()}
+              </p>
+            </article>
+          ))
+        )}
       </div>
     </section>
   );

@@ -5,7 +5,8 @@ import type {
   SignInRequest,
   SignInResponse,
   SignUpRequest,
-  SignUpResponse
+  SignUpResponse,
+  UserRecord
 } from '@dsim/shared';
 import { JwtService } from '@nestjs/jwt';
 import { BadRequestException } from '@nestjs/common';
@@ -42,7 +43,7 @@ export class AuthService {
     };
   }
 
-  private signToken(userId: string, email: string, role: string) {
+  private signToken(userId: string, email: string, role: string | UserRecord['role']) {
     const jwtPayload: JwtPayload = { sub: userId, email, role };
     const accessToken = this.jwtService.sign(jwtPayload);
     return {

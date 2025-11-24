@@ -1,39 +1,38 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import type { ApiResponse, SignUpRequest, UserRecord } from '@dsim/shared';
 import bcrypt from 'bcryptjs';
-import { randomUUID } from 'crypto';
+import type { Prisma, User } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class UsersService {
-  private users: UserRecord[] = [];
+  constructor(private readonly prisma: PrismaService) {}
 
   getMessage(): ApiResponse {
     return { message: 'Users module ready' };
   }
 
-  async createUser(payload: SignUpRequest, role: UserRecord['role'] = 'traveler'): Promise<UserRecord> {
-    const existing = await this.findByEmail(payload.email);
+  async createUser(payload: SignUpRequest, role: UserRecord['role'] = 'traveler'): Promise<User> {
+    const existing = await this.prisma.user.findUnique({ where: { email: payload.email } });
     if (existing) {
       throw new BadRequestException('User already exists');
     }
 
     const passwordHash = await bcrypt.hash(payload.password, 10);
-    const user: UserRecord = {
-      id: randomUUID(),
+    const data: Prisma.UserCreateInput = {
       email: payload.email,
       name: payload.name,
-      role,
+      role: role as any,
       passwordHash
     };
-    this.users.push(user);
-    return user;
+    return this.prisma.user.create({ data });
   }
 
-  async findByEmail(email: string): Promise<UserRecord | undefined> {
-    return this.users.find((user) => user.email === email);
+  async findByEmail(email: string): Promise<User | null> {
+    return this.prisma.user.findUnique({ where: { email } });
   }
 
-  async verifyUser(email: string, password: string): Promise<UserRecord> {
+  async verifyUser(email: string, password: string): Promise<User> {
     const user = await this.findByEmail(email);
     if (!user) {
       throw new NotFoundException('Invalid credentials');

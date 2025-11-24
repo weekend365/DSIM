@@ -66,4 +66,33 @@ export interface UserRecord {
   passwordHash: string;
 }
 
+export interface Profile {
+  id: string;
+  userId: string;
+  bio?: string | null;
+  location?: string | null;
+  interests?: string | null;
+  languages?: string | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
+export interface TravelPost {
+  id: string;
+  title: string;
+  description?: string | null;
+  destination: string;
+  startDate?: string | null | Date;
+  endDate?: string | null | Date;
+  budget?: number | null;
+  creatorId: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  creator?: {
+    id: string;
+    email: string;
+    name: string;
+  };
+}
+
 // TODO: Add cross-cutting DTOs and validation schemas when features land.
