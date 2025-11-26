@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { JwtPayload, Profile, TravelPost } from '@dsim/shared';
 import { apiFetch, decodeJwt, getAccessToken } from '../../src/lib/api';
 
@@ -12,6 +13,7 @@ const emptyProfile: Partial<Profile> = {
 };
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<JwtPayload | null>(null);
   const [profile, setProfile] = useState<Partial<Profile>>(emptyProfile);
@@ -121,6 +123,17 @@ export default function DashboardPage() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('dsim:accessToken');
+    setToken(null);
+    setUser(null);
+    setProfile({ ...emptyProfile });
+    setPosts([]);
+    setProfileMessage('Logged out.');
+    setPostMessage('');
+    router.push('/');
+  };
+
   return (
     <section className="space-y-8">
       <header className="space-y-1">
@@ -129,6 +142,15 @@ export default function DashboardPage() {
         <p className="text-sm text-slate-500">
           Status: {token ? 'Authenticated' : 'Sign in required'}{user?.email ? ` as ${user.email}` : ''}
         </p>
+        {token ? (
+          <button
+            className="text-sm font-medium text-red-600 underline"
+            type="button"
+            onClick={handleLogout}
+          >
+            Log out
+          </button>
+        ) : null}
       </header>
 
       <div className="grid gap-6 lg:grid-cols-2">
