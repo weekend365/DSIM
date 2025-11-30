@@ -1,22 +1,35 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { getAccessToken } from '../src/lib/api';
+import { usePathname, useRouter } from 'next/navigation';
+import { fetchSession } from '../src/lib/api';
 
 export default function HeaderNav() {
   const router = useRouter();
+  const pathname = usePathname();
   const [isAuthed, setIsAuthed] = useState(false);
 
   useEffect(() => {
-    const token = getAccessToken();
-    setIsAuthed(Boolean(token));
+    const load = async () => {
+      const session = await fetchSession();
+      setIsAuthed(Boolean(session));
+    };
+    void load();
+  }, [pathname]);
+
+  useEffect(() => {
+    const handleStorage = () => {
+      void fetchSession().then((session) => setIsAuthed(Boolean(session)));
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('dsim:accessToken');
-    setIsAuthed(false);
-    router.push('/');
+    fetch('/auth/logout', { method: 'POST', credentials: 'include' }).finally(() => {
+      setIsAuthed(false);
+      router.push('/signin');
+    });
   };
 
   return (

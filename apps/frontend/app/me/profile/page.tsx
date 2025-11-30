@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { JwtPayload, Profile } from '@dsim/shared';
-import { apiFetch, decodeJwt, getAccessToken } from '../../../src/lib/api';
+import { apiFetch, fetchSession } from '../../../src/lib/api';
 
 const emptyProfile: Partial<Profile> = {
   bio: '',
@@ -20,27 +20,27 @@ export default function MyProfilePage() {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    const token = getAccessToken();
-    if (!token) {
-      alert('로그인 후 이용해주세요.');
-      router.replace('/signin');
-      return;
-    }
-    const decoded = decodeJwt(token);
-    setUser(decoded);
-    if (decoded?.sub) {
-      void apiFetch<Profile>(`/profiles/${decoded.sub}`, { method: 'GET' })
-        .then((data) =>
-          setProfile({
-            bio: data.bio ?? '',
-            location: data.location ?? '',
-            interests: data.interests ?? '',
-            languages: data.languages ?? ''
-          })
-        )
-        .catch(() => setProfile({ ...emptyProfile }));
-    }
-    setAuthChecked(true);
+    void fetchSession<JwtPayload>().then((session) => {
+      if (!session) {
+        alert('로그인 후 이용해주세요.');
+        router.replace('/signin');
+        return;
+      }
+      setUser(session);
+      if (session.sub) {
+        void apiFetch<Profile>(`/profiles/${session.sub}`, { method: 'GET' })
+          .then((data) =>
+            setProfile({
+              bio: data.bio ?? '',
+              location: data.location ?? '',
+              interests: data.interests ?? '',
+              languages: data.languages ?? ''
+            })
+          )
+          .catch(() => setProfile({ ...emptyProfile }));
+      }
+      setAuthChecked(true);
+    });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

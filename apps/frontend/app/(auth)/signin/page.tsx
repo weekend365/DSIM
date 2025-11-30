@@ -7,6 +7,7 @@ import type { SignInResponse } from '@dsim/shared';
 export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState<string>('');
   const router = useRouter();
@@ -22,8 +23,9 @@ export default function SignInPage() {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        }
+          credentials: 'include',
+          body: JSON.stringify({ email, password, rememberMe }),
+        },
       );
 
       if (!response.ok) {
@@ -35,12 +37,7 @@ export default function SignInPage() {
       setStatus('success');
       setMessage(data.message ?? '로그인에 성공했습니다');
 
-      if (data.data?.accessToken) {
-        // TODO: Replace localStorage usage with a secure cookie once real auth is wired.
-        localStorage.setItem('dsim:accessToken', data.data.accessToken);
-      }
-
-      // Redirect to dashboard after a brief tick so the UI can show success.
+      // Redirect after cookie is set
       setTimeout(() => {
         router.push('/home');
       }, 150);
@@ -81,6 +78,15 @@ export default function SignInPage() {
             required
           />
         </label>
+        <label className="flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="h-4 w-4 rounded border-slate-300"
+          />
+          자동 로그인
+        </label>
         <button
           type="submit"
           className="w-full rounded-lg bg-brand-600 px-3 py-2 text-white shadow-brand-500/40 disabled:opacity-60"
@@ -100,7 +106,10 @@ export default function SignInPage() {
         </p>
       ) : null}
       <p className="text-center text-sm text-slate-500">
-        계정이 없나요? <a className="text-brand-600" href="/signup">가입하기</a>
+        계정이 없나요?{' '}
+        <a className="text-brand-600" href="/signup">
+          가입하기
+        </a>
       </p>
     </section>
   );

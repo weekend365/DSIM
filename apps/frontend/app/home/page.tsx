@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { JwtPayload, TravelPost } from '@dsim/shared';
-import { apiFetch, decodeJwt, getAccessToken } from '../../src/lib/api';
+import { apiFetch, fetchSession } from '../../src/lib/api';
 import TravelPostCard from '../../components/TravelPostCard';
 
 export default function HomePage() {
@@ -10,15 +10,14 @@ export default function HomePage() {
   const [posts, setPosts] = useState<TravelPost[]>([]);
 
   useEffect(() => {
-    const token = getAccessToken();
-    if (!token) return;
-    const decoded = decodeJwt(token);
-    setUser(decoded);
-    if (decoded?.sub) {
-      void apiFetch<TravelPost[]>('/travel-posts').then((data) => {
-        setPosts(data.filter((p) => p.creatorId === decoded.sub));
-      });
-    }
+    void fetchSession<JwtPayload>().then((session) => {
+      setUser(session ?? null);
+      if (session?.sub) {
+        void apiFetch<TravelPost[]>('/travel-posts').then((data) => {
+          setPosts(data.filter((p) => p.creatorId === session.sub));
+        });
+      }
+    });
   }, []);
 
   return (

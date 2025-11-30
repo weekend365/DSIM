@@ -23,6 +23,7 @@ export default function SignUpPage() {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ name, email, password })
         }
       );
@@ -33,10 +34,6 @@ export default function SignUpPage() {
       }
 
       const data = (await response.json()) as SignUpResponse;
-      if (data.data?.accessToken) {
-        // TODO: Move to httpOnly cookie flow when backend supports it.
-        localStorage.setItem('dsim:accessToken', data.data.accessToken);
-      }
       setStatus('success');
       setMessage(data.message ?? 'DSIM에 오신 것을 환영합니다!');
       setTimeout(() => router.push('/home'), 150);

@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 import type { SignUpRequest } from '@dsim/shared';
 
 export class SignUpDto implements SignUpRequest {
@@ -12,4 +12,8 @@ export class SignUpDto implements SignUpRequest {
   @IsString()
   @MinLength(1)
   name!: string;
+
+  @IsOptional()
+  @IsBoolean()
+  rememberMe?: boolean;
 }

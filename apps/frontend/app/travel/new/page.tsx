@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { JwtPayload } from '@dsim/shared';
-import { apiFetch, decodeJwt, getAccessToken } from '../../../src/lib/api';
+import { apiFetch, fetchSession } from '../../../src/lib/api';
 
 export default function TravelNewPage() {
   const router = useRouter();
@@ -20,14 +20,15 @@ export default function TravelNewPage() {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    const token = getAccessToken();
-    if (!token) {
-      alert('로그인 후 이용해주세요.');
-      router.replace('/signin');
-      return;
-    }
-    setUser(decodeJwt(token));
-    setAuthChecked(true);
+    void fetchSession<JwtPayload>().then((session) => {
+      if (!session) {
+        alert('로그인 후 이용해주세요.');
+        router.replace('/signin');
+        return;
+      }
+      setUser(session);
+      setAuthChecked(true);
+    });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

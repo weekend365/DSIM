@@ -36,10 +36,12 @@ export interface HealthCheckResponse extends ApiResponse {
 export interface SignInRequest {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface SignUpRequest extends SignInRequest {
   name: string;
+  rememberMe?: boolean;
 }
 
 export interface AuthTokenPayload {
