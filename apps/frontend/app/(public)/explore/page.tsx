@@ -1,49 +1,34 @@
 import type { TravelPost } from '@dsim/shared';
+import TravelPostCard from '../../../components/TravelPostCard';
+import FilterBar from '../../../components/FilterBar';
 
-async function fetchTravelPosts(): Promise<TravelPost[]> {
+async function fetchPosts(): Promise<TravelPost[]> {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000'}/travel-posts`,
     { next: { revalidate: 10 } }
   );
-  if (!res.ok) {
-    console.error('Failed to load travel posts', await res.text());
-    return [];
-  }
+  if (!res.ok) return [];
   return res.json();
 }
 
 export default async function ExplorePage() {
-  const posts = await fetchTravelPosts();
+  const posts = await fetchPosts();
 
   return (
     <section className="space-y-6">
       <header className="space-y-2">
-        <p className="text-sm uppercase tracking-[0.3em] text-brand-600">Explore</p>
-        <h1 className="text-3xl font-semibold">Public itineraries from early adopters</h1>
-        <p className="text-slate-600">See how travelers pair up before onboarding launches.</p>
+        <p className="text-sm uppercase tracking-[0.3em] text-brand-600">탐색</p>
+        <h1 className="text-3xl font-semibold">여행 피드</h1>
+        <p className="text-slate-600">여행 계획을 둘러보고 어울리는 동행을 찾아보세요.</p>
       </header>
+
+      <FilterBar />
+
       <div className="grid gap-4 md:grid-cols-3">
         {posts.length === 0 ? (
-          <article className="rounded-xl border border-dashed border-slate-200 bg-white/70 p-4 text-sm text-slate-600">
-            No travel posts yet. Be the first to create one from your dashboard.
-          </article>
+          <p className="text-sm text-slate-600">아직 등록된 여행이 없습니다.</p>
         ) : (
-          posts.map((post) => (
-            <article
-              key={post.id}
-              className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm"
-            >
-              <h2 className="text-lg font-semibold">{post.title}</h2>
-              <p className="text-sm text-slate-500">{post.destination}</p>
-              <p className="mt-2 text-sm text-slate-700">
-                {post.description || 'No description yet.'}
-              </p>
-              <p className="mt-2 text-xs text-slate-500">
-                {post.creator?.name ?? 'Anonymous'} •{' '}
-                {new Date(post.createdAt).toLocaleDateString()}
-              </p>
-            </article>
-          ))
+          posts.map((post) => <TravelPostCard key={post.id} post={post} />)
         )}
       </div>
     </section>

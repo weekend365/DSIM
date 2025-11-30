@@ -29,7 +29,7 @@ export default function SignUpPage() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Sign-up failed');
+        throw new Error(errorText || '회원가입에 실패했습니다');
       }
 
       const data = (await response.json()) as SignUpResponse;
@@ -38,38 +38,38 @@ export default function SignUpPage() {
         localStorage.setItem('dsim:accessToken', data.data.accessToken);
       }
       setStatus('success');
-      setMessage(data.message ?? 'Welcome to DSIM!');
-      setTimeout(() => router.push('/dashboard'), 150);
+      setMessage(data.message ?? 'DSIM에 오신 것을 환영합니다!');
+      setTimeout(() => router.push('/home'), 150);
     } catch (error) {
       console.error('Sign-up error', error);
       setStatus('error');
-      setMessage(error instanceof Error ? error.message : 'Sign-up failed');
+      setMessage(error instanceof Error ? error.message : '회원가입에 실패했습니다');
     }
   };
 
   return (
     <section className="space-y-6">
       <header className="space-y-2 text-center">
-        <p className="text-sm uppercase tracking-[0.3em] text-brand-600">Create account</p>
-        <h1 className="text-3xl font-semibold">Join DSIM</h1>
-        <p className="text-slate-600">Build a traveler profile to get better companion matches.</p>
+        <p className="text-sm uppercase tracking-[0.3em] text-brand-600">회원가입</p>
+        <h1 className="text-3xl font-semibold">DSIM에 합류하세요</h1>
+        <p className="text-slate-600">여행자 프로필을 작성해 더 좋은 동행 매칭을 받으세요.</p>
       </header>
       <form
         className="mx-auto w-full max-w-md space-y-4 rounded-2xl border border-slate-200 bg-white/90 p-8 shadow"
         onSubmit={handleSubmit}
       >
         <label className="block text-sm font-medium text-slate-700">
-          Name
+          이름
           <input
             className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Traveler Kim"
+            placeholder="여행자 김"
             required
           />
         </label>
         <label className="block text-sm font-medium text-slate-700">
-          Email
+          이메일
           <input
             className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2"
             type="email"
@@ -80,13 +80,13 @@ export default function SignUpPage() {
           />
         </label>
         <label className="block text-sm font-medium text-slate-700">
-          Password
+          비밀번호
           <input
             className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="At least 6 characters"
+            placeholder="6자 이상 입력하세요"
             required
             minLength={6}
           />
@@ -97,7 +97,7 @@ export default function SignUpPage() {
           disabled={status === 'loading'}
           aria-busy={status === 'loading'}
         >
-          {status === 'loading' ? 'Creating account...' : 'Create account'}
+          {status === 'loading' ? '가입 중...' : '계정 만들기'}
         </button>
         {message ? (
           <p className={`text-center text-sm ${status === 'error' ? 'text-red-600' : 'text-green-600'}`}>
@@ -105,9 +105,9 @@ export default function SignUpPage() {
           </p>
         ) : null}
         <p className="text-center text-sm text-slate-500">
-          Already have an account?{' '}
+          이미 계정이 있나요?{' '}
           <a className="text-brand-600" href="/signin">
-            Sign in
+            로그인
           </a>
         </p>
       </form>
