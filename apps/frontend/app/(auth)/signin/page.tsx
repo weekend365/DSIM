@@ -54,7 +54,7 @@ export default function SignInPage() {
     <section className="mx-auto w-full max-w-md space-y-6 rounded-2xl border border-slate-200 bg-white/90 p-8 shadow">
       <header className="space-y-2 text-center">
         <p className="text-sm font-medium uppercase tracking-[0.3em] text-brand-600">로그인</p>
-        <h2 className="text-2xl font-semibold">DSIM 여정을 이어가세요</h2>
+        <h2 className="text-2xl font-semibold">동상일몽 여정을 이어가세요</h2>
       </header>
       <form className="space-y-4" onSubmit={handleSubmit}>
         <label className="block text-sm font-medium text-slate-700">

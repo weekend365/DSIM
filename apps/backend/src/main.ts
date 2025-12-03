@@ -22,7 +22,7 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 4000;
   await app.listen(port);
-  Logger.log(`🚀 DSIM backend listening on http://localhost:${port}`);
+  Logger.log(`🚀 동상일몽 backend listening on http://localhost:${port}`);
 }
 
 bootstrap().catch((error) => {

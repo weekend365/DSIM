@@ -35,7 +35,7 @@ export default function SignUpPage() {
 
       const data = (await response.json()) as SignUpResponse;
       setStatus('success');
-      setMessage(data.message ?? 'DSIM에 오신 것을 환영합니다!');
+      setMessage(data.message ?? '동상일몽에 오신 것을 환영합니다!');
       setTimeout(() => router.push('/home'), 150);
     } catch (error) {
       console.error('Sign-up error', error);
@@ -48,7 +48,7 @@ export default function SignUpPage() {
     <section className="space-y-6">
       <header className="space-y-2 text-center">
         <p className="text-sm uppercase tracking-[0.3em] text-brand-600">회원가입</p>
-        <h1 className="text-3xl font-semibold">DSIM에 합류하세요</h1>
+        <h1 className="text-3xl font-semibold">동상일몽에 합류하세요</h1>
         <p className="text-slate-600">여행자 프로필을 작성해 더 좋은 동행 매칭을 받으세요.</p>
       </header>
       <form

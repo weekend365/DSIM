@@ -35,7 +35,7 @@ export default function HeaderNav() {
   return (
     <nav className="flex items-center justify-between">
       <a href="/" className="text-xl font-semibold tracking-tight text-brand-600">
-        DSIM
+        동상일몽
       </a>
       <div className="flex items-center gap-3 text-sm font-medium text-slate-700">
         <a href="/home">홈</a>
