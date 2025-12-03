@@ -11,6 +11,7 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { TravelPostsModule } from './travel-posts/travel-posts.module';
 import { UsersModule } from './users/users.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UsersModule } from './users/users.module';
     TravelPostsModule,
     MatchingModule,
     ChatModule,
+    NotificationsModule,
     ExpensesModule,
     ReviewsModule,
     LocationModule,

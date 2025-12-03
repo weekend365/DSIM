@@ -6,6 +6,11 @@ import TravelPostModal from './TravelPostModal';
 
 type Props = { post: TravelPost };
 
+const formatDate = (value: string | Date) => {
+  const d = typeof value === 'string' ? new Date(value) : value;
+  return d.toISOString().slice(0, 10); // YYYY-MM-DD, timezone agnostic for SSR/CSR
+};
+
 export default function TravelPostCard({ post }: Props) {
   const [open, setOpen] = useState(false);
 
@@ -21,7 +26,7 @@ export default function TravelPostCard({ post }: Props) {
           {post.description || '아직 설명이 없습니다.'}
         </p>
         <p className="mt-2 text-xs text-slate-500">
-          {post.creator?.name ?? '알 수 없음'} • {new Date(post.createdAt).toLocaleDateString()}
+          {post.creator?.name ?? '알 수 없음'} • {formatDate(post.createdAt)}
         </p>
       </article>
       <TravelPostModal postId={post.id} isOpen={open} onClose={() => setOpen(false)} />

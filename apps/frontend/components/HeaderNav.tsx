@@ -44,6 +44,7 @@ export default function HeaderNav() {
         <a href="/travel/new" className="rounded-full bg-brand-600 px-3 py-1 text-white">
           새 여행 만들기
         </a>
+        <a href="/chat">채팅</a>
         {isAuthed ? (
           <button
             className="text-red-600 hover:text-red-700"

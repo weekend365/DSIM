@@ -24,6 +24,11 @@ model User {
   profile      Profile?
   posts        TravelPost[]
   refreshTokens RefreshToken[]
+  chatMembers  ChatMember[]
+  chatMessages ChatMessage[]
+  notifications Notification[]
+  sentInvitations ChatInvitation[] @relation("InvitationFromUser")
+  receivedInvitations ChatInvitation[] @relation("InvitationToUser")
 }
 
 model Profile {
@@ -61,4 +66,60 @@ model RefreshToken {
   replacedBy  String?
   expiresAt   DateTime
   createdAt   DateTime @default(now())
+}
+
+model ChatRoom {
+  id          String       @id @default(uuid())
+  title       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  members     ChatMember[]
+  messages    ChatMessage[]
+  invitations ChatInvitation[]
+}
+
+model ChatMember {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  room      ChatRoom @relation(fields: [roomId], references: [id])
+  roomId    String
+  joinedAt  DateTime @default(now())
+
+  @@unique([userId, roomId])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  content   String
+  room      ChatRoom @relation(fields: [roomId], references: [id])
+  roomId    String
+  sender    User     @relation(fields: [senderId], references: [id])
+  senderId  String
+  createdAt DateTime @default(now())
+}
+
+model ChatInvitation {
+  id         String   @id @default(uuid())
+  room       ChatRoom @relation(fields: [roomId], references: [id])
+  roomId     String
+  fromUser   User     @relation("InvitationFromUser", fields: [fromUserId], references: [id])
+  fromUserId String
+  toUser     User     @relation("InvitationToUser", fields: [toUserId], references: [id])
+  toUserId   String
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+
+  @@index([toUserId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  type      String
+  title     String?
+  message   String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
 }

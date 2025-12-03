@@ -36,7 +36,10 @@ export class AuthController {
   }
 
   @Post('refresh')
-  async refresh(@Req() req: Request & { cookies?: Record<string, string> }, @Res({ passthrough: true }) res: Response): Promise<SignInResponse> {
+  async refresh(
+    @Req() req: Request & { cookies?: Record<string, string> },
+    @Res({ passthrough: true }) res: Response
+  ): Promise<SignInResponse> {
     const refreshCookie = req.cookies?.['dsim_refresh'];
     const csrfHeader = req.headers['x-csrf-token'] as string | undefined;
     const csrfCookie = req.cookies?.['dsim_csrf'];
