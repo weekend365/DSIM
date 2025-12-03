@@ -5,10 +5,21 @@ import { CreateChatRoomDto } from './dto/create-chat-room.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+import { EventEmitter } from 'events';
+import { fromEvent, map, type Observable } from 'rxjs';
 
 @Injectable()
 export class ChatService {
   constructor(private readonly prisma: PrismaService, private readonly notifications: NotificationsService) {}
+
+  private roomEmitters = new Map<string, EventEmitter>();
+
+  private getEmitter(roomId: string): EventEmitter {
+    if (!this.roomEmitters.has(roomId)) {
+      this.roomEmitters.set(roomId, new EventEmitter());
+    }
+    return this.roomEmitters.get(roomId)!;
+  }
 
   getMessage(): ApiResponse {
     return { message: 'Chat module ready' };
@@ -49,16 +60,23 @@ export class ChatService {
     return this.prisma.chatMessage.findMany({
       where: { roomId },
       orderBy: { createdAt: 'asc' },
-      include: { sender: { select: { id: true, name: true, email: true } } }
+      include: { sender: { select: { id: true, name: true, email: true, profile: { select: { avatarUrl: true } } } } }
     });
   }
 
   async sendMessage(user: JwtPayload, roomId: string, dto: SendMessageDto) {
     const isMember = await this.prisma.chatMember.findFirst({ where: { roomId, userId: user.sub } });
     if (!isMember) throw new ForbiddenException('Not a member of this room');
-    return this.prisma.chatMessage.create({
-      data: { roomId, senderId: user.sub, content: dto.content }
+    const message = await this.prisma.chatMessage.create({
+      data: { roomId, senderId: user.sub, content: dto.content },
+      include: { sender: { select: { id: true, email: true, name: true, profile: { select: { avatarUrl: true } } } } }
     });
+    this.getEmitter(roomId).emit('message', message);
+    return message;
+  }
+
+  streamMessages(user: JwtPayload, roomId: string): Observable<{ data: unknown }> {
+    return fromEvent(this.getEmitter(roomId), 'message').pipe(map((payload) => ({ data: payload })));
   }
 
   async invite(user: JwtPayload, roomId: string, dto: CreateInvitationDto) {

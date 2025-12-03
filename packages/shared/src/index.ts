@@ -75,6 +75,10 @@ export interface Profile {
   location?: string | null;
   interests?: string | null;
   languages?: string | null;
+  avatarUrl?: string | null;
+  travelStyles?: string[] | null;
+  travelPace?: string | null;
+  budgetPreference?: string | null;
   createdAt: string | Date;
   updatedAt: string | Date;
 }

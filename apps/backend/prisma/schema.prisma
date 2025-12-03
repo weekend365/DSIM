@@ -29,6 +29,8 @@ model User {
   notifications Notification[]
   sentInvitations ChatInvitation[] @relation("InvitationFromUser")
   receivedInvitations ChatInvitation[] @relation("InvitationToUser")
+  followers    Follow[] @relation("FollowFollower")
+  following    Follow[] @relation("FollowFollowing")
 }
 
 model Profile {
@@ -39,6 +41,10 @@ model Profile {
   location    String?
   interests   String?
   languages   String?
+  avatarUrl   String?
+  travelStyles String[]
+  travelPace   String?
+  budgetPreference String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -122,4 +128,14 @@ model Notification {
   message   String?
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model Follow {
+  follower     User   @relation("FollowFollower", fields: [followerId], references: [id])
+  followerId   String
+  following    User   @relation("FollowFollowing", fields: [followingId], references: [id])
+  followingId  String
+  createdAt    DateTime @default(now())
+
+  @@id([followerId, followingId])
 }

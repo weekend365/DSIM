@@ -12,11 +12,11 @@ export class ProfilesService {
   }
 
   async upsertProfile(input: UpsertProfileDto) {
-    const { userId, bio, interests, languages, location } = input;
+    const { userId, bio, interests, languages, location, avatarUrl, travelStyles, travelPace, budgetPreference } = input;
     return this.prisma.profile.upsert({
       where: { userId },
-      update: { bio, interests, languages, location },
-      create: { userId, bio, interests, languages, location }
+      update: { bio, interests, languages, location, avatarUrl, travelStyles, travelPace, budgetPreference },
+      create: { userId, bio, interests, languages, location, avatarUrl, travelStyles, travelPace, budgetPreference }
     });
   }
 

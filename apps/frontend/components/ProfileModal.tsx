@@ -1,15 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { Profile } from '@dsim/shared';
-import { apiBase } from '../src/lib/api';
+import type { JwtPayload, Profile } from '@dsim/shared';
+import { apiBase, apiFetch, fetchSession } from '../src/lib/api';
 
 type Props = { userId: string; isOpen: boolean; onClose: () => void };
+type FollowEntry = { followingId: string; followerId: string; following?: { id: string } };
 
 export default function ProfileModal({ userId, isOpen, onClose }: Props) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [session, setSession] = useState<JwtPayload | null>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+
+  useEffect(() => {
+    void fetchSession<JwtPayload>().then((s) => setSession(s));
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -22,6 +30,18 @@ export default function ProfileModal({ userId, isOpen, onClose }: Props) {
         if (!res.ok) throw new Error(await res.text());
         const data = (await res.json()) as Profile;
         if (!cancelled) setProfile(data);
+        if (session?.sub && session.sub !== userId) {
+          try {
+            const following = await apiFetch<FollowEntry[]>('/follows/following');
+            if (!cancelled) {
+              setIsFollowing(
+                following.some((f) => f.followingId === userId || f.following?.id === userId)
+              );
+            }
+          } catch {
+            if (!cancelled) setIsFollowing(false);
+          }
+        }
       } catch (err) {
         console.error(err);
         if (!cancelled) setError('프로필을 불러오지 못했습니다');
@@ -33,7 +53,31 @@ export default function ProfileModal({ userId, isOpen, onClose }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [isOpen, userId]);
+  }, [isOpen, userId, session?.sub]);
+
+  const toggleFollow = async () => {
+    if (!session) {
+      alert('로그인 후 이용해주세요.');
+      window.location.href = '/signin';
+      return;
+    }
+    if (userId === session.sub) return;
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await apiFetch(`/follows/${userId}`, { method: 'DELETE' });
+        setIsFollowing(false);
+      } else {
+        await apiFetch(`/follows/${userId}`, { method: 'POST' });
+        setIsFollowing(true);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('팔로우 처리에 실패했습니다.');
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -77,6 +121,15 @@ export default function ProfileModal({ userId, isOpen, onClose }: Props) {
           >
             채팅 열기
           </button>
+          {session?.sub !== userId ? (
+            <button
+              className="rounded-lg border border-slate-200 px-4 py-2"
+              onClick={toggleFollow}
+              disabled={followLoading}
+            >
+              {isFollowing ? '팔로우 취소' : '팔로우'}
+            </button>
+          ) : null}
         </div>
       </div>
     </div>

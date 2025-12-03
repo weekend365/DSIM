@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { Profile, TravelPost } from '@dsim/shared';
-import { apiBase } from '../src/lib/api';
+import type { JwtPayload, Profile, TravelPost } from '@dsim/shared';
+import { apiBase, apiFetch, fetchSession } from '../src/lib/api';
 import ProfileModal from './ProfileModal';
 
 type Props = { postId: string; isOpen: boolean; onClose: () => void };
+type FollowEntry = { followingId: string; followerId: string; following?: { id: string } };
 
 export default function TravelPostModal({ postId, isOpen, onClose }: Props) {
   const [post, setPost] = useState<TravelPost | null>(null);
@@ -13,6 +14,14 @@ export default function TravelPostModal({ postId, isOpen, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [session, setSession] = useState<JwtPayload | null>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    void fetchSession<JwtPayload>().then((s) => setSession(s));
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -33,6 +42,18 @@ export default function TravelPostModal({ postId, isOpen, onClose }: Props) {
             const profileData = (await profileRes.json()) as Profile;
             if (!isCancelled) setCreatorProfile(profileData);
           }
+          if (session?.sub && postData.creatorId !== session.sub) {
+            try {
+              const following = await apiFetch<FollowEntry[]>('/follows/following');
+              if (!isCancelled) {
+                setIsFollowing(
+                  following.some((f) => f.followingId === postData.creatorId || f.following?.id === postData.creatorId)
+                );
+              }
+            } catch {
+              if (!isCancelled) setIsFollowing(false);
+            }
+          }
         }
       } catch (err) {
         console.error(err);
@@ -45,7 +66,76 @@ export default function TravelPostModal({ postId, isOpen, onClose }: Props) {
     return () => {
       isCancelled = true;
     };
-  }, [isOpen, postId]);
+  }, [isOpen, postId, session?.sub]);
+
+  const toggleFollow = async () => {
+    if (!post?.creatorId || !session) {
+      alert('로그인 후 이용해주세요.');
+      window.location.href = '/signin';
+      return;
+    }
+    if (post.creatorId === session.sub) return;
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await apiFetch(`/follows/${post.creatorId}`, { method: 'DELETE' });
+        setIsFollowing(false);
+      } else {
+        await apiFetch(`/follows/${post.creatorId}`, { method: 'POST' });
+        setIsFollowing(true);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('팔로우 처리에 실패했습니다.');
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  const handleJoinRequest = async () => {
+    if (!post?.creatorId || !session) {
+      alert('로그인 후 이용해주세요.');
+      window.location.href = '/signin';
+      return;
+    }
+    try {
+      await apiFetch('/notifications', {
+        method: 'POST',
+        body: JSON.stringify({
+          userId: post.creatorId,
+          type: 'join_request',
+          title: post.title ?? '여행 동행 요청',
+          message: `${session.email}님이 이 여정에 참여를 요청했습니다.`
+        })
+      });
+      setActionMessage('참여 요청을 보냈습니다.');
+    } catch (err) {
+      console.error(err);
+      alert('요청을 보내지 못했습니다.');
+    }
+  };
+
+  const handleOpenChat = async () => {
+    if (!session) {
+      alert('로그인 후 이용해주세요.');
+      window.location.href = '/signin';
+      return;
+    }
+    if (!post?.creatorId) return;
+    try {
+      const room = await apiFetch<{ id: string }>('/chat/rooms', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: post.title ? `여행 채팅 - ${post.title}` : '여행 채팅',
+          participantIds: post.creatorId === session.sub ? [] : [post.creatorId]
+        })
+      });
+      window.location.href = `/chat?room=${room.id}`;
+    } catch (err) {
+      console.error(err);
+      alert('채팅방을 만들지 못했습니다.');
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -97,6 +187,15 @@ export default function TravelPostModal({ postId, isOpen, onClose }: Props) {
                   프로필 전체 보기
                 </button>
               </div>
+              {post?.creatorId && session?.sub !== post.creatorId ? (
+                <button
+                  className="mt-3 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium"
+                  onClick={toggleFollow}
+                  disabled={followLoading}
+                >
+                  {isFollowing ? '팔로우 취소' : '팔로우'}
+                </button>
+              ) : null}
               <p className="mt-2 text-sm text-slate-600">
                 {creatorProfile?.bio ?? '프로필을 불러오거나 찾을 수 없습니다.'}
               </p>
@@ -105,16 +204,17 @@ export default function TravelPostModal({ postId, isOpen, onClose }: Props) {
             <div className="mt-6 flex gap-3">
               <button
                 className="rounded-lg bg-brand-600 px-4 py-2 text-white"
-                onClick={() => console.log('TODO: matching request')}
+                onClick={handleJoinRequest}
               >
                 참여 요청하기
               </button>
               <button
                 className="rounded-lg border border-slate-200 px-4 py-2"
-                onClick={() => console.log('TODO: open chat')}
+                onClick={handleOpenChat}
               >
                 채팅 열기
               </button>
+              {actionMessage ? <p className="text-sm text-slate-600">{actionMessage}</p> : null}
             </div>
           </>
         )}

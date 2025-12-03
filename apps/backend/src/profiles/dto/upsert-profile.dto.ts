@@ -1,4 +1,5 @@
 import { IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsArray } from 'class-validator';
 
 export class UpsertProfileDto {
   @IsUUID()
@@ -19,4 +20,20 @@ export class UpsertProfileDto {
   @IsOptional()
   @IsString()
   languages?: string;
+
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string;
+
+  @IsOptional()
+  @IsArray()
+  travelStyles?: string[];
+
+  @IsOptional()
+  @IsString()
+  travelPace?: string;
+
+  @IsOptional()
+  @IsString()
+  budgetPreference?: string;
 }

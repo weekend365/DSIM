@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, Sse, UseGuards } from '@nestjs/common';
 import type { ApiResponse, JwtPayload } from '@dsim/shared';
 import { ChatService } from './chat.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -32,6 +32,12 @@ export class ChatController {
   @Get('rooms/:id/messages')
   listMessages(@Req() req: { user: JwtPayload }, @Param('id') id: string) {
     return this.chatService.listMessages(req.user, id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Sse('rooms/:id/stream')
+  streamMessages(@Req() req: { user: JwtPayload }, @Param('id') id: string) {
+    return this.chatService.streamMessages(req.user, id);
   }
 
   @UseGuards(JwtAuthGuard)

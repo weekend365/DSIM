@@ -12,6 +12,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { TravelPostsModule } from './travel-posts/travel-posts.module';
 import { UsersModule } from './users/users.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { FollowsModule } from './follows/follows.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     MatchingModule,
     ChatModule,
     NotificationsModule,
+    FollowsModule,
     ExpensesModule,
     ReviewsModule,
     LocationModule,
